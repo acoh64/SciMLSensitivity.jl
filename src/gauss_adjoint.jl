@@ -440,14 +440,18 @@ function vec_pjac!(out, λ, y, t, S::GaussIntegrand)
     # y is aliased
 
     if !isautojacvec
+        #println("!isautojacvec")
         if DiffEqBase.has_paramjac(f)
             f.paramjac(pJ, y, p, t) # Calculate the parameter Jacobian into pJ
         else
             pf.t = t
             jacobian!(pJ, pf, p, f_cache, sensealg, paramjac_config)
         end
+        println("pJ = $pJ")
+        println("λ = $λ")
         mul!(out', λ', pJ)
     elseif sensealg.autojacvec isa ReverseDiffVJP
+        #println("sensealg.autojacvec isa ReverseDiffVJP")
         tape = paramjac_config
         tu, tp, tt = ReverseDiff.input_hook(tape)
         output = ReverseDiff.output_hook(tape)
@@ -462,6 +466,7 @@ function vec_pjac!(out, λ, y, t, S::GaussIntegrand)
         ReverseDiff.reverse_pass!(tape)
         copyto!(vec(out), ReverseDiff.deriv(tp))
     elseif sensealg.autojacvec isa ZygoteVJP
+        #println("sensealg.autojacvec isa ZygoteVJP")
         _dy, back = Zygote.pullback(p) do p
             vec(f(y, p, t))
         end
@@ -469,6 +474,7 @@ function vec_pjac!(out, λ, y, t, S::GaussIntegrand)
         #out[:] .= vec(tmp[1])
         recursive_copyto!(out,tmp[1])
     elseif sensealg.autojacvec isa EnzymeVJP
+        #println("sensealg.autojacvec isa EnzymeVJP")
         tmp3, tmp4 = paramjac_config
         tmp4 .= λ
         out .= 0

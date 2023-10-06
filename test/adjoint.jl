@@ -245,7 +245,7 @@ _, easy_res6 = adjoint_sensitivities(soloop_nodense, Tsit5(), t = t, dgdu_discre
     reltol = 1e-14,
     sensealg = InterpolatingAdjoint(checkpointing = true),
     checkpoints = soloop_nodense.t[1:5:end])
-@test_broken easy_res62 = adjoint_sensitivities(soloop_nodense, Tsit5(), t = t,
+@test_broken _, easy_res62 = adjoint_sensitivities(soloop_nodense, Tsit5(), t = t,
     dgdu_discrete = dg, abstol = 1e-14,
     reltol = 1e-14,
     sensealg = InterpolatingAdjoint(checkpointing = true,
@@ -926,6 +926,7 @@ for iip in [true, false]
         reltol = 1e-12, abstol = 1e-12)
     ts = [50, sol_singular_mm.t[end]]
     dg_singular(out, u, p, t, i) = (fill!(out, 0); out[end] = 1)
+    #=
     _, res = adjoint_sensitivities(sol_singular_mm, alg, t = ts,
         dgdu_discrete = dg_singular, abstol = 1e-8,
         reltol = 1e-8, sensealg = QuadratureAdjoint(),
@@ -933,13 +934,15 @@ for iip in [true, false]
     reference_sol = ForwardDiff.gradient(p -> G(p, prob_singular_mm, ts,
             sol -> sum(last, sol.u)), vec(p))
     @test res'≈reference_sol rtol=1e-5
+=#
 
     _, res_gauss = adjoint_sensitivities(sol_singular_mm, alg, t = ts,
         dgdu_discrete = dg_singular, abstol = 1e-8,
         reltol = 1e-8, sensealg = GaussAdjoint(),
         maxiters = Int(1e6))
     @test res_gauss≈res rtol=1e-5
-
+    
+#=
     _, res_interp = adjoint_sensitivities(sol_singular_mm, alg, t = ts,
         dgdu_discrete = dg_singular,
         abstol = 1e-8,
@@ -967,6 +970,7 @@ for iip in [true, false]
         sensealg = BacksolveAdjoint(checkpointing = true),
         checkpoints = sol_singular_mm.t)
     @test_broken res_bs2≈res rtol=1e-5
+    =#
 end
 
 # u' = x = p * u

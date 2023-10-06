@@ -375,8 +375,12 @@ function adjoint_sensitivities(sol, args...;
         end
 
         return try
-            _adjoint_sensitivities(sol, _sensealg, args...; verbose, kwargs...)
+          println("try")
+          _adjoint_sensitivities(sol, setvjp(sensealg, false), args...; verbose,
+                kwargs...)
+            #_adjoint_sensitivities(sol, _sensealg, args...; verbose, kwargs...)
         catch e
+          println("fail")
             verbose &&
                 @warn "Automatic AD choice of autojacvec failed in ODE adjoint, failing back to ODE adjoint + numerical vjp"
             _adjoint_sensitivities(sol, setvjp(sensealg, false), args...; verbose,
